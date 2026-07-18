@@ -1,101 +1,254 @@
+# ⚡ Steel Industry Energy Consumption Prediction
 
+A Machine Learning and FastAPI project developed for Week 3 that explores **Principal Component Analysis (PCA)** for dimensionality reduction and deploys a **Random Forest regression model** through an interactive FastAPI web application.
 
-## 📁 Repository Structure
+---
+
+# 📌 Project Overview
+
+The project consists of two major components:
+
+- **PCA Analysis**
+  - Evaluate dimensionality reduction.
+  - Compare model performance before and after PCA.
+  - Visualize explained variance and principal components.
+
+- **FastAPI Web Dashboard**
+  - Display exploratory data analysis (EDA) charts.
+  - Allow users to predict electricity consumption through a web interface.
+
+---
+
+# 📂 Project Layout
 
 ```
 .
 ├── data/
-│   └── Steel_industry_data_engineered.csv   # Feature-engineered dataset carried over from Week 2
+│   └── Steel_industry_data_engineered.csv
 ├── notebooks/
-│   └── week3_pca.ipynb                       # Part 1: PCA analysis, all cells run, outputs visible
-├── outputs/                                  # Saved PCA charts (scree plot, cumulative variance, etc.)
-├── static/                                   # CSS + dashboard PNGs served by FastAPI
+│   └── week3_pca.ipynb
+├── outputs/
+├── static/
 │   ├── style.css
 │   ├── avg_usage_by_hour.png
 │   ├── avg_usage_by_loadtype.png
 │   └── correlation_heatmap.png
-├── templates/                                # Jinja2 HTML templates
+├── templates/
 │   ├── home.html
 │   ├── dashboard.html
 │   └── predict.html
-├── main.py                                   # FastAPI application
-├── model.joblib                              # Saved production pipeline (preprocessing + Random Forest)
-├── model_metadata.joblib                     # Feature names + categorical options, used to build the form
+├── main.py
+├── model.joblib
+├── model_metadata.joblib
 ├── requirements.txt
 └── README.md
 ```
 
-## Part 1 — PCA (`notebooks/week3_pca.ipynb`)
+---
 
-- Recreated the exact Week 2 feature set and one-hot encoding (20 total encoded features),
-  and the exact 80/20 split (`random_state=42`)
-- **StandardScaler and PCA fit on the training set only**, then used to transform both train
-  and test sets (no data leakage from the test set into scaling/PCA parameters)
-- Full PCA (`n_components=20`) to inspect variance explained per component
-- Scree plot (bar chart) of explained variance ratio per component
-- Cumulative explained variance curve with a 95% threshold line — **10 of 20 components**
-  are needed to reach 95% variance
-- Retrained Random Forest on **3 PCA components** and on the **10 components (95% variance)**
-- Loading heatmap: original features × first 3 principal components
-- Full written Dimensionality Reduction Report (see notebook, section 10)
+# 📊 PCA Analysis
 
-### Results
+The notebook follows the same preprocessing pipeline developed in Week 2.
 
-| Version | # Features | MAE | RMSE | R² |
-|---|---|---|---|---|
-| Original (Week 2, all features) | 20 | 0.351 | 1.045 | 0.9990 |
-| 3-component PCA (55.7% variance) | 3 | 3.437 | 7.152 | 0.9550 |
-| 10-component PCA (95% variance) | 10 | 1.615 | 3.212 | 0.9909 |
+### Workflow
 
-**Key finding:** accuracy drop is real and scales with compression — the 3-component model is
-~7x worse on RMSE than the original; even the 95%-variance model is ~3x worse. Random Forest
-already does implicit feature selection via its splits, so PCA repackages information the model
-could use more directly, at a real accuracy cost. **PCA is not recommended for this specific
-model** unless a memory/latency constraint makes the trade-off worthwhile — it would pay off
-more clearly for linear models. Full reasoning is in the notebook's Dimensionality Reduction
-Report.
+- Imported the engineered dataset
+- Applied one-hot encoding (20 total features)
+- Used an 80/20 train-test split (`random_state=42`)
+- Standardized only the training data to prevent data leakage
+- Applied PCA with all available components
+- Generated Scree Plot and Cumulative Variance Plot
+- Identified the number of components needed to preserve 95% of the variance
+- Retrained Random Forest models using reduced feature spaces
+- Compared model performance with the original feature set
+- Produced a loading heatmap for the first three principal components
 
-**Production model note:** the original unconstrained Random Forest (200 trees, no depth limit)
-serializes to ~380 MB — too large for GitHub (100 MB limit) and unnecessarily heavy for a demo
-dashboard. The deployed `model.joblib` uses `max_depth=12, min_samples_leaf=3, n_estimators=100`
-— a deliberate size/accuracy trade-off (MAE 0.634, RMSE 1.533, R² 0.998, ~18 MB) documented in
-the notebook. This is the model served by the FastAPI app below.
+---
 
-## Part 2 — FastAPI Dashboard (`main.py`)
+# 📈 Model Performance
 
-- **`GET /`** — welcome page with a navigation bar (Home / Dashboard / Predict)
-- **`GET /dashboard`** — renders 3 Week 2 EDA visualizations as static images: average usage
-  by hour, average usage by load type, and the full correlation heatmap
-- **`GET /predict`** — renders an HTML form with one input field per feature the model needs
-  (11 numeric fields + 3 categorical dropdowns, built dynamically from `model_metadata.joblib`
-  so the form always matches the deployed model)
-- **`POST /predict`** — reads the form, builds a one-row DataFrame, runs it through
-  `model.joblib`, and re-renders the same page with the predicted `Usage_kWh`
-- All routes tested locally and confirmed working (200 OK on every GET route, and a real
-  end-to-end prediction returned successfully on POST) before this was submitted
+| Model | Features | MAE | RMSE | R² |
+|------|---------:|----:|-----:|----:|
+| Original Random Forest | 20 | 0.351 | 1.045 | 0.9990 |
+| PCA (3 Components) | 3 | 3.437 | 7.152 | 0.9550 |
+| PCA (10 Components) | 10 | 1.615 | 3.212 | 0.9909 |
 
-## 🚀 How to Run
+---
+
+# 🔍 Findings
+
+The experiments indicate that PCA decreases prediction accuracy for this regression task.
+
+Although reducing the feature space to 10 principal components retains approximately 95% of the total variance, the Random Forest trained on the original features consistently achieves better performance.
+
+Because Random Forest inherently performs feature selection while constructing decision trees, PCA provides little benefit for this model and instead removes information useful for prediction.
+
+---
+
+# 🤖 Production Model
+
+For deployment, the original model was optimized to reduce storage requirements.
+
+### Original Model
+
+- 200 trees
+- Unlimited depth
+- Approximate size: **380 MB**
+
+### Deployment Model
+
+- 100 trees
+- `max_depth = 12`
+- `min_samples_leaf = 3`
+
+Performance:
+
+| Metric | Value |
+|--------|------:|
+| MAE | 0.634 |
+| RMSE | 1.533 |
+| R² | 0.998 |
+| Model Size | ~18 MB |
+
+This optimized model is stored as **model.joblib** and is used by the FastAPI application.
+
+---
+
+# 🌐 FastAPI Application
+
+The web application provides three main pages.
+
+## Home
+
+```
+GET /
+```
+
+Landing page with navigation links.
+
+---
+
+## Dashboard
+
+```
+GET /dashboard
+```
+
+Displays the EDA visualizations:
+
+- Average Usage by Hour
+- Average Usage by Load Type
+- Correlation Heatmap
+
+---
+
+## Prediction
+
+```
+GET /predict
+```
+
+Displays a dynamic prediction form generated from `model_metadata.joblib`.
+
+The form contains:
+
+- 11 numerical inputs
+- 3 categorical dropdown menus
+
+---
+
+## Prediction Endpoint
+
+```
+POST /predict
+```
+
+Processes user input, creates a DataFrame, predicts electricity usage using the trained model, and returns the estimated **Usage_kWh**.
+
+---
+
+# ▶️ Running the Application
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Start the server:
+
+```bash
 uvicorn main:app --reload
 ```
 
-Then visit:
-- `http://127.0.0.1:8000/` — home page
-- `http://127.0.0.1:8000/dashboard` — EDA dashboard
-- `http://127.0.0.1:8000/predict` — live prediction form
+Open the application in your browser:
 
-To regenerate the PCA analysis and the production `model.joblib` / `model_metadata.joblib` from
-scratch, run `notebooks/week3_pca.ipynb` top to bottom (requires `data/Steel_industry_data_engineered.csv`,
-which is Week 2's engineered output, already included here).
+| Page | URL |
+|------|-----|
+| Home | http://127.0.0.1:8000/ |
+| Dashboard | http://127.0.0.1:8000/dashboard |
+| Predict | http://127.0.0.1:8000/predict |
 
-## 🔜 Next Steps
+---
 
-- Standardize features and compare a feature-scaled Ridge/Lasso against PCA-reduced inputs,
-  where PCA is expected to help more than it did for Random Forest here
-- Add input validation ranges to the prediction form based on the training data's min/max per
-  feature, to guard against wildly out-of-distribution inputs
-- Containerize the FastAPI app (Dockerfile) for easier deployment
-- Add a `/api/predict` JSON endpoint alongside the HTML form for programmatic access
+# 📒 Reproducing the PCA Analysis
 
-## 📄 License
+Run every cell in:
 
-Dataset licensed under CC BY 4.0 (V E, S., Shin, C., & Cho, Y., 2021, UCI ML Repository).
+```
+notebooks/week3_pca.ipynb
+```
+
+Required dataset:
+
+```
+data/Steel_industry_data_engineered.csv
+```
+
+The notebook regenerates:
+
+- PCA visualizations
+- Random Forest model
+- model.joblib
+- model_metadata.joblib
+
+---
+
+# 🚀 Future Enhancements
+
+- Compare PCA with Ridge and Lasso Regression
+- Improve prediction form validation
+- Dockerize the FastAPI application
+- Create a REST API endpoint for JSON predictions
+- Deploy the application to a cloud platform
+
+---
+
+# 📚 Technologies Used
+
+- Python
+- FastAPI
+- Scikit-learn
+- Pandas
+- NumPy
+- Matplotlib
+- Jinja2
+- Joblib
+
+---
+
+# 📄 License
+
+Dataset:
+
+**Steel Industry Energy Consumption Dataset**
+
+Licensed under **CC BY 4.0**
+
+Authors:
+
+- V. E. S.
+- C. Shin
+- Y. Cho
+
+Available through the UCI Machine Learning Repository.
