@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Predict — Steel Energy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <nav>
+    <span class="brand"><span class="dot"></span> STEEL ENERGY</span>
+    <a href="/">Home</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/predict" class="active">Predict</a>
+  </nav>
+
+  <div class="container">
+    <div class="eyebrow">Random Forest inference</div>
+    <h1>Predict Energy Consumption</h1>
+    <p class="subtitle">
+      Enter a set of sensor readings to get a real-time <strong>Usage_kWh</strong> prediction
+      from the trained Random Forest pipeline.
+    </p>
+
+    <div class="card">
+      <form action="/predict" method="post">
+        {% for feat in numeric_features %}
+        <div class="field">
+          <label for="{{ feat }}">{{ feat }}</label>
+          <input type="number" step="any" id="{{ feat }}" name="{{ feat }}"
+                 value="{{ form_values.get(feat, '') }}" required>
+        </div>
+        {% endfor %}
+
+        {% for feat, options in categorical_options.items() %}
+        <div class="field">
+          <label for="{{ feat }}">{{ feat }}</label>
+          <select id="{{ feat }}" name="{{ feat }}" required>
+            {% for opt in options %}
+            <option value="{{ opt }}" {% if form_values.get(feat) == opt %}selected{% endif %}>{{ opt }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endfor %}
+
+        <button type="submit">Predict Usage_kWh</button>
+      </form>
+
+      {% if prediction is not none %}
+      <div class="result">
+        Predicted energy consumption: <strong>{{ prediction }} kWh</strong>
+      </div>
+      {% endif %}
+
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

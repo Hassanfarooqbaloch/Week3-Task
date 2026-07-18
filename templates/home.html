@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Steel Energy Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <nav>
+    <span class="brand"><span class="dot"></span> STEEL ENERGY</span>
+    <a href="/" class="active">Home</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/predict">Predict</a>
+  </nav>
+
+  <div class="container">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Live plant telemetry · Random Forest model</div>
+        <h1>Read the plant's energy load before it reads you.</h1>
+        <p class="subtitle">
+          Explore usage patterns pulled from a real steel manufacturing plant, then
+          feed a fresh set of sensor readings to the trained model for an instant
+          Usage_kWh prediction.
+        </p>
+        <div class="buttons">
+          <a href="/dashboard" class="btn btn-primary">View Dashboard →</a>
+          <a href="/predict" class="btn btn-secondary">Get a Prediction</a>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat">
+            <b>3</b>
+            <span>Load Types Tracked</span>
+          </div>
+          <div class="stat">
+            <b>24h</b>
+            <span>Usage Cycle Mapped</span>
+          </div>
+          <div class="stat">
+            <b>RF</b>
+            <span>Model Architecture</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="arc" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#38E1C6"/>
+              <stop offset="55%" stop-color="#FF6A2B"/>
+              <stop offset="100%" stop-color="#FF5470"/>
+            </linearGradient>
+          </defs>
+          <!-- dial ticks -->
+          <g stroke="#262F3A" stroke-width="2">
+            <path d="M40,180 A140,140 0 0,1 320,180" fill="none" stroke="#1B222C" stroke-width="18"/>
+            <path d="M40,180 A140,140 0 0,1 320,180" fill="none" stroke="url(#arc)" stroke-width="4" stroke-dasharray="4 10" stroke-linecap="round"/>
+          </g>
+          <!-- needle -->
+          <g class="gauge-needle">
+            <line x1="180" y1="180" x2="180" y2="58" stroke="#FF6A2B" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="180" cy="180" r="9" fill="#FF6A2B"/>
+            <circle cx="180" cy="180" r="3.5" fill="#0B0F14"/>
+          </g>
+          <text x="180" y="150" text-anchor="middle" class="gauge-readout" font-size="26" fill="#E7ECF2" font-weight="700">62.4</text>
+          <text x="180" y="170" text-anchor="middle" class="gauge-readout" font-size="11" fill="#9AA6B3" letter-spacing="1">kWh · CURRENT LOAD</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

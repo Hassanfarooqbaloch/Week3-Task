@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard — Steel Energy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <nav>
+    <span class="brand"><span class="dot"></span> STEEL ENERGY</span>
+    <a href="/">Home</a>
+    <a href="/dashboard" class="active">Dashboard</a>
+    <a href="/predict">Predict</a>
+  </nav>
+
+  <div class="container">
+    <div class="eyebrow">Week 2 · Exploratory Data Analysis</div>
+    <h1>EDA Dashboard</h1>
+    <p class="subtitle">Key insights pulled from the plant's raw sensor logs before modeling.</p>
+
+    <div class="chart-grid">
+      <div class="card">
+        <h2>Average Energy Usage by Hour of Day</h2>
+        <img src="/static/avg_usage_by_hour.png" alt="Average energy usage by hour of day">
+      </div>
+
+      <div class="card">
+        <h2>Average Energy Consumption by Load Type</h2>
+        <img src="/static/avg_usage_by_loadtype.png" alt="Average energy consumption by load type">
+      </div>
+
+      <div class="card">
+        <h2>Correlation Heatmap</h2>
+        <img src="/static/correlation_heatmap.png" alt="Correlation heatmap of numerical features">
+      </div>
+    </div>
+  </div>
+</body>
+</html>
